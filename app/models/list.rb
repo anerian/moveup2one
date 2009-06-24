@@ -1,4 +1,6 @@
 class List < ActiveRecord::Base
+  acts_as_taggable
+  
   belongs_to :user
   has_many :items, :dependent => :destroy
   has_many :rankings

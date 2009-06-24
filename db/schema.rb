@@ -9,7 +9,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20090624143703) do
+ActiveRecord::Schema.define(:version => 20090624151721) do
 
   create_table "items", :force => true do |t|
     t.string   "title",                        :null => false
@@ -47,6 +47,20 @@ ActiveRecord::Schema.define(:version => 20090624143703) do
   end
 
   add_index "rankings", ["list_id", "user_id"], :name => "index_rankings_on_list_id_and_user_id", :unique => true
+
+  create_table "taggings", :force => true do |t|
+    t.integer  "tag_id"
+    t.integer  "taggable_id"
+    t.string   "taggable_type"
+    t.datetime "created_at"
+  end
+
+  add_index "taggings", ["tag_id"], :name => "index_taggings_on_tag_id"
+  add_index "taggings", ["taggable_id", "taggable_type"], :name => "index_taggings_on_taggable_id_and_taggable_type"
+
+  create_table "tags", :force => true do |t|
+    t.string "name"
+  end
 
   create_table "users", :force => true do |t|
     t.string   "login",                            :null => false
