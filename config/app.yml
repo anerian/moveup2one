@@ -1,0 +1,11 @@
+# An app config, provided by App: http://github.com/stephencelis/app
+---
+development: &development
+  app_name: 'moveup2one'
+  loaded_at: <%= Time.zone.now.iso8601 %>
+
+test:
+  <<: *development
+
+production:
+  <<: *development
