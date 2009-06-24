@@ -19,6 +19,7 @@ Rails::Initializer.run do |config|
   # config.gem "hpricot", :version => '0.6', :source => "http://code.whytheluckystiff.net"
   # config.gem "sqlite3-ruby", :lib => "sqlite3"
   config.gem "authlogic"
+  config.gem "activemerchant", :lib => "active_merchant"
   config.gem "stephencelis-app", :lib => "app", :source  => "http://gems.github.com", :version => ">= 0.2.2"
 
   # Only load the plugins named here, in the order given (default is alphabetical).

@@ -9,7 +9,17 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20090624151721) do
+ActiveRecord::Schema.define(:version => 20090624220607) do
+
+  create_table "friendships", :force => true do |t|
+    t.integer  "user_id",                       :null => false
+    t.integer  "friend_id",                     :null => false
+    t.boolean  "block",      :default => false
+    t.datetime "created_at"
+    t.datetime "updated_at"
+  end
+
+  add_index "friendships", ["user_id", "friend_id"], :name => "index_friendships_on_user_id_and_friend_id", :unique => true
 
   create_table "items", :force => true do |t|
     t.string   "title",                        :null => false
@@ -38,6 +48,25 @@ ActiveRecord::Schema.define(:version => 20090624151721) do
 
   add_index "lists", ["user_id"], :name => "index_lists_on_user_id"
 
+  create_table "payments", :force => true do |t|
+    t.integer  "user_id",                                                         :null => false
+    t.integer  "subscription_id",                                                 :null => false
+    t.decimal  "amount",          :precision => 10, :scale => 2, :default => 0.0
+    t.string   "transaction_id"
+    t.datetime "created_at"
+    t.datetime "updated_at"
+  end
+
+  add_index "payments", ["subscription_id"], :name => "index_payments_on_subscription_id"
+  add_index "payments", ["user_id"], :name => "index_payments_on_user_id"
+
+  create_table "plans", :force => true do |t|
+    t.string   "name"
+    t.decimal  "amount",     :precision => 10, :scale => 2
+    t.datetime "created_at"
+    t.datetime "updated_at"
+  end
+
   create_table "rankings", :force => true do |t|
     t.integer  "list_id",    :null => false
     t.integer  "user_id"
@@ -47,6 +76,21 @@ ActiveRecord::Schema.define(:version => 20090624151721) do
   end
 
   add_index "rankings", ["list_id", "user_id"], :name => "index_rankings_on_list_id_and_user_id", :unique => true
+
+  create_table "subscriptions", :force => true do |t|
+    t.decimal  "amount",          :precision => 10, :scale => 2
+    t.datetime "next_renewal_at"
+    t.string   "card_number"
+    t.string   "card_expiration"
+    t.integer  "plan_id"
+    t.integer  "user_id"
+    t.integer  "renewal_period",                                 :default => 1
+    t.string   "billing_id"
+    t.datetime "created_at"
+    t.datetime "updated_at"
+  end
+
+  add_index "subscriptions", ["user_id"], :name => "index_subscriptions_on_user_id"
 
   create_table "taggings", :force => true do |t|
     t.integer  "tag_id"
