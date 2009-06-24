@@ -9,7 +9,44 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20090622145435) do
+ActiveRecord::Schema.define(:version => 20090624143703) do
+
+  create_table "items", :force => true do |t|
+    t.string   "title",                        :null => false
+    t.text     "description"
+    t.integer  "list_id",                      :null => false
+    t.integer  "user_id",                      :null => false
+    t.float    "mean",        :default => 0.0
+    t.float    "std",         :default => 0.0
+    t.datetime "created_at"
+    t.datetime "updated_at"
+  end
+
+  add_index "items", ["list_id"], :name => "index_items_on_list_id"
+
+  create_table "lists", :force => true do |t|
+    t.string   "title",                             :null => false
+    t.integer  "user_id",                           :null => false
+    t.text     "description"
+    t.integer  "items_count",    :default => 0
+    t.integer  "comments_count", :default => 0
+    t.integer  "rankings_count", :default => 0
+    t.boolean  "is_private",     :default => false
+    t.datetime "created_at"
+    t.datetime "updated_at"
+  end
+
+  add_index "lists", ["user_id"], :name => "index_lists_on_user_id"
+
+  create_table "rankings", :force => true do |t|
+    t.integer  "list_id",    :null => false
+    t.integer  "user_id"
+    t.text     "ordinals",   :null => false
+    t.datetime "created_at"
+    t.datetime "updated_at"
+  end
+
+  add_index "rankings", ["list_id", "user_id"], :name => "index_rankings_on_list_id_and_user_id", :unique => true
 
   create_table "users", :force => true do |t|
     t.string   "login",                            :null => false

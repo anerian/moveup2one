@@ -1,65 +1,57 @@
 class List < ActiveRecord::Base
   belongs_to :user
   has_many :items, :dependent => :destroy
+  has_many :rankings
+  has_many :users, :through => :rankings
   
   validates_presence_of :title
-  validates_presence_of :user_id
 
-  before_save :cleanup
+  before_save :cleanup_attributes
   
-  def self.per_page; 10; end
-  
-  def items_in_average_order
-    items.sort_by{|item| -(item.cached_average_rank || 0) }
-  end
-  
-  def items_in_user_order(user)
-    items.all(:include => :rankings).sort_by do |item|
-      rank = item.rankings.detect{|r| r.user_id == user.id}
-      
-      rank.blank?? 0 : -rank.ordinal
-    end
-  end
-  
-  def ranked_users(options = {})
-    options[:page] ||= 1
-    options[:per_page] ||= 10
+  def items_ordered_by_user(list_user)
+    ranking = list_user.rankings.find_or_initialize_by_list_id(id)
+    return items if ranking.blank?
     
-    User.paginate(
-      :page       => options[:page], 
-      :per_page   => options[:per_page],
-      :joins      => "INNER JOIN rankings ON rankings.user_id = users.id INNER JOIN items ON rankings.item_id = items.id",
-      :group      => "rankings.user_id",
-      :conditions => {'items.list_id' => self.id})
+    ranking.item_ids.map{|item_id| items.detect{|item| item.id == item_id}}
+  end
+
+  def add_item!(item)
+    items << item
+    save
   end
   
   def rank!(list_user, item_ids = [])
     List.transaction do
-      rankings = list_user.rankings.all(:conditions => {:item_id => item_ids}, :include => [:item])
+      ranking = list_user.rankings.find_or_initialize_by_list_id(id)
       
-      item_ids.each_with_index do |item_id, i|
-        item_id = item_id.to_i
-        ranking = rankings.detect{|r| r.item_id == item_id}
-        ranking ||= Ranking.new(:user_id => list_user.id, :item_id => item_id)
-        ranking.ordinal = (item_ids.length - i);
-        ranking.save!
-        
-        ranking.item.compute_average_rank
-        ranking.item.save!
-      end
+      # store rankings in json format
+      # { :item_1 => :position, :item_2 => :position }
+      ranking.rank = item_ids.inject({}){|hash, item_id| hash[item_id.to_s] = (item_ids.length - item_ids.index(item_id)).to_s; hash}.to_json
+      ranking.save!
+      update_averages!
+      publish_event('prioritized', list_user.id)
     end
   end
   
-  def update_all_counter_caches!
-    # counts = {}
-    # counts[:prioritized_users_count] = prioritized_users.total_entries
-    # updates = counts.collect {|k,v| "#{k} = #{v}"}.join(", ")
-    # List.update_all(updates, "id = #{self.id}")
+  def update_averages!
+    sql = <<-EOF
+      UPDATE items SET items.mean = (SELECT AVG(JSON_FAST(rankings.rank, items.id)) FROM rankings WHERE rankings.list_id = items.list_id), 
+                       items.std  = (SELECT STDDEV_SAMP(JSON_FAST(rankings.rank, items.id)) FROM rankings WHERE rankings.list_id = items.list_id) 
+                 WHERE items.list_id = #{id};
+    EOF
+    List.connection.update(sql)
   end
   
-  private
-
-    def cleanup
+  def update_all_counter_caches!
+    counts = {}
+    counts[:rankings_count] = users.count
+    updates = counts.collect {|k,v| "#{k} = #{v}"}.join(", ")
+    List.update_all(updates, "id = #{self.id}")
+  end
+  
+  protected
+  
+    def cleanup_attributes
       self.title.strip! unless self.title.blank?
       self.description.strip! unless self.description.blank?
     end

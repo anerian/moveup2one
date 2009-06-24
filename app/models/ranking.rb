@@ -1,14 +1,12 @@
 class Ranking < ActiveRecord::Base
   belongs_to :user
-  belongs_to :item
+  belongs_to :ranked_list, :class_name => "List", :foreign_key => "list_id"
   
-  after_save :update_cached_average
+  after_save :update_averages
   
-  def update_cached_average
-    item.compute_average_rank
-  end
-  
-  def after_create
-    item.list.update_all_counter_caches!
+  def item_ids
+    return [] if rank.blank?
+    json = JSON.parse(rank)
+    json.sort_by(&:second).reverse.map{|a|a.first.to_i}
   end
 end
