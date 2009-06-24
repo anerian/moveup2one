@@ -26,17 +26,16 @@ class List < ActiveRecord::Base
       
       # store rankings in json format
       # { :item_1 => :position, :item_2 => :position }
-      ranking.rank = item_ids.inject({}){|hash, item_id| hash[item_id.to_s] = (item_ids.length - item_ids.index(item_id)).to_s; hash}.to_json
+      ranking.ordinals = item_ids.inject({}){|hash, item_id| hash[item_id.to_s] = (item_ids.length - item_ids.index(item_id)).to_s; hash}.to_json
       ranking.save!
       update_averages!
-      publish_event('prioritized', list_user.id)
     end
   end
   
   def update_averages!
     sql = <<-EOF
-      UPDATE items SET items.mean = (SELECT AVG(JSON_FAST(rankings.rank, items.id)) FROM rankings WHERE rankings.list_id = items.list_id), 
-                       items.std  = (SELECT STDDEV_SAMP(JSON_FAST(rankings.rank, items.id)) FROM rankings WHERE rankings.list_id = items.list_id) 
+      UPDATE items SET items.mean = (SELECT AVG(JSON_FAST(rankings.ordinals, items.id)) FROM rankings WHERE rankings.list_id = items.list_id), 
+                       items.std  = (SELECT STDDEV_SAMP(JSON_FAST(rankings.ordinals, items.id)) FROM rankings WHERE rankings.list_id = items.list_id) 
                  WHERE items.list_id = #{id};
     EOF
     List.connection.update(sql)

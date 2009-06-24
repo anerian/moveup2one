@@ -5,8 +5,8 @@ class Ranking < ActiveRecord::Base
   after_save :update_averages
   
   def item_ids
-    return [] if rank.blank?
-    json = JSON.parse(rank)
+    return [] if ordinals.blank?
+    json = JSON.parse(ordinals)
     json.sort_by(&:second).reverse.map{|a|a.first.to_i}
   end
 end
