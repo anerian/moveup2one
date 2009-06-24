@@ -44,8 +44,9 @@ class List < ActiveRecord::Base
   end
   
   def update_all_counter_caches!
-    counts = {}
-    counts[:rankings_count] = users.count
+    counts = {
+      :rankings_count => users.count
+    }
     updates = counts.collect {|k,v| "#{k} = #{v}"}.join(", ")
     List.update_all(updates, "id = #{self.id}")
   end

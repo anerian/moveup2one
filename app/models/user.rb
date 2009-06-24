@@ -4,4 +4,6 @@ class User < ActiveRecord::Base
   has_many :lists
   has_many :rankings
   has_many :ranked_lists, :through => :rankings
+  has_many :friendships
+  has_many :friends, :through => :friendships
 end
