@@ -1,0 +1,13 @@
+development:
+  login: 'admin_1245943529_biz_api1.anerian.com'
+  password: '1245943576'
+  signature: 'AUToU04CJgO2LPdUR7sUrCDh9dYTA9S-My4kzJl4KiKyNAx-jMQkNfKz'
+production:
+  login: 'login'
+  password: 'password'
+  signature: 'signature'
+test:
+  login: 'admin_1245943529_biz_api1.anerian.com'
+  password: '1245943576'
+  signature: 'AUToU04CJgO2LPdUR7sUrCDh9dYTA9S-My4kzJl4KiKyNAx-jMQkNfKz'
+  
